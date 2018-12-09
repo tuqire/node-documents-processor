@@ -39,6 +39,7 @@ app.post('/data-processor-basic', async (req, res) => {
   }
 
   res.status(200).send({
+    ...process.memoryUsage(),
     endTime: Date.now(),
     startTime
   })

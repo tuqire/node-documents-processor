@@ -1,6 +1,6 @@
 import axios from 'axios'
 import dataGenerator from './data-generator'
-import processResponse from './process-response'
+import responseProcessor from './response-processor'
 import { addLoader, removeLoader } from './loader'
 
 const SERVER_URL = 'http://localhost:8094'
@@ -24,6 +24,6 @@ window.addEventListener('load', () => {
       })
 
       removeLoader()
-      processResponse(responseData)
+      responseProcessor(responseData)
     })
 })
