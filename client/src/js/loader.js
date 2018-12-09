@@ -1,12 +1,15 @@
-export const addLoader = () => {
-  const container = document.querySelector('#response-container')
+export const addLoader = containerId => {
+  const container = document.querySelector(`#${containerId}`)
 
-  container.innerHTML = `
-    <h4>Loading...</h4>`
+  const loader = document.createElement('h4')
+  loader.setAttribute('class', 'loader')
+  loader.innerHTML = 'Loading...'
+
+  container.appendChild(loader)
 }
 
-export const removeLoader = () => {
-  const container = document.querySelector('#response-container')
+export const removeLoader = containerId => {
+  const loader = document.querySelector(`#${containerId} .loader`)
 
-  container.innerHTML = ''
+  loader.parentNode.removeChild(loader)
 }

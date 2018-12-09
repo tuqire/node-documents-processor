@@ -1,9 +1,7 @@
 import uuidv1 from 'uuid/v1'
 import words from 'random-words'
 
-export default ({
-  numRecords = 20000
-} = {}) => {
+export default (numRecords = 2000) => {
   let result = []
 
   for (let i = 0; i < numRecords; i++) {

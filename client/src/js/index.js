@@ -3,27 +3,35 @@ import dataGenerator from './data-generator'
 import responseProcessor from './response-processor'
 import { addLoader, removeLoader } from './loader'
 
-const SERVER_URL = 'http://localhost:8094'
+const getNumRecords = () => {
+  const numRecordsVal = document.querySelector('#number-records').value
+  return !isNaN(numRecordsVal) ? numRecordsVal : 2000
+}
+
+const processData = async (elId, data) => {
+  const SERVER_URL = 'http://localhost:8094'
+
+  addLoader(elId)
+
+  const { data: responseData } = await axios({
+    method: 'post',
+    url: `${SERVER_URL}/data-processor-basic`,
+    data: { data }
+  })
+
+  removeLoader(elId)
+
+  return responseData
+}
 
 window.addEventListener('load', () => {
-  console.log('page ready')
-
-  document.querySelector('#post-data-basic-button')
+  document.querySelector('#basic-processor-button')
     .addEventListener('click', async () => {
-      console.log('#post-data-button pressed')
-      const data = dataGenerator()
+      const elId = 'basic-container'
+      const data = dataGenerator(getNumRecords())
 
-      addLoader()
+      const responseData = await processData(elId, data)
 
-      const { data: responseData } = await axios({
-        method: 'post',
-        url: `${SERVER_URL}/data-processor-basic`,
-        data: {
-          data
-        }
-      })
-
-      removeLoader()
-      responseProcessor(responseData)
+      responseProcessor(elId, responseData)
     })
 })
