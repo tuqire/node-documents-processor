@@ -36,7 +36,7 @@ if (isProduction) {
 
 module.exports = env => ({
   devtool: 'source-map',
-  entry: './src/js/main.js',
+  entry: './src/js/index.js',
   mode: isProduction ? 'production' : 'development',
   output: {
     filename: 'js/[name].[contenthash].js',

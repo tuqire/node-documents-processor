@@ -13,16 +13,20 @@
     "build": "cd client && NODE_ENV='production' webpack",
     "lint": "eslint client/src && eslint client/webpack.config.js",
     "start:client": "cd client && webpack-dev-server",
+    "start:mock-external-server": "node mock-external-server",
     "start:server": "node server"
   },
   "dependencies": {
+    "@babel/runtime": "^7.2.0",
+    "axios": "^0.18.0",
+    "body-parser": "^1.18.3",
     "random-words": "^1.1.0",
     "uuid": "^3.3.2"
   },
   "devDependencies": {
     "@babel/core": "^7.1.6",
     "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
-    "@babel/plugin-transform-runtime": "^7.1.0",
+    "@babel/plugin-transform-runtime": "^7.2.0",
     "@babel/preset-env": "^7.1.6",
     "babel-eslint": "^8.2.2",
     "babel-loader": "^8.0.4",

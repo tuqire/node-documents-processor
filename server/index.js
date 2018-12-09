@@ -1,9 +1,45 @@
 const express = require('express')
-const app = express()
+const bodyParser = require('body-parser')
 const server = require('./server')
+const axios = require('axios')
+
+const EXTERNAL_SERVER_URL = 'http://localhost:8095'
+
+const app = express()
 
 server(app)
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
+app.use(function (req, res, next) {
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8093')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE')
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type')
+  res.setHeader('Access-Control-Allow-Credentials', true)
+
+  next()
+})
+
+app.use(bodyParser.json({ limit: '50mb' }))
+
+app.post('/data-processor-basic', async (req, res) => {
+  if (!req.body.data) {
+    res.sendStatus(401)
+  }
+
+  const startTime = Date.now()
+
+  for (let i = 0; i < req.body.data.length; i++) {
+    try {
+      await axios({
+        method: 'post',
+        url: `${EXTERNAL_SERVER_URL}/mock-parser`
+      })
+    } catch (err) {
+      console.log({ err })
+    }
+  }
+
+  res.status(200).send({
+    endTime: Date.now(),
+    startTime
+  })
 })
