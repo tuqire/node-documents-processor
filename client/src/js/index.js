@@ -28,7 +28,12 @@ window.addEventListener('load', () => {
   document.querySelector('#json-processor-button')
     .addEventListener('click', async () => {
       const elId = 'json-container'
+
+      addLoader(elId, 'Generating data...')
+
       const data = dataGenerator(getNumRecords())
+
+      removeLoader(elId)
 
       const responseData = await processData(elId, { data }, 'json')
 
@@ -38,7 +43,13 @@ window.addEventListener('load', () => {
   document.querySelector('#buffer-processor-button')
     .addEventListener('click', async () => {
       const elId = 'buffer-container'
+
+      addLoader(elId, 'Generating data...')
+
       const data = dataGenerator(getNumRecords())
+
+      removeLoader(elId)
+
       let stringifiedData = '[\n'
 
       for (let i = 0; i < data.length; i++) {
@@ -55,7 +66,12 @@ window.addEventListener('load', () => {
   document.querySelector('#threads-processor-button')
     .addEventListener('click', async () => {
       const elId = 'threads-container'
+
+      addLoader(elId, 'Generating data...')
+
       const data = dataGenerator(getNumRecords())
+
+      removeLoader(elId)
 
       const numThreadsVal = document.querySelector('#number-threads').value
       const numThreads = !isNaN(numThreadsVal) ? parseInt(numThreadsVal) : 4

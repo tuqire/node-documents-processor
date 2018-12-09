@@ -1,9 +1,9 @@
-export const addLoader = containerId => {
+export const addLoader = (containerId, message = 'Processing...') => {
   const container = document.querySelector(`#${containerId}`)
 
   const loader = document.createElement('h4')
   loader.setAttribute('class', 'loader')
-  loader.innerHTML = 'Loading...'
+  loader.innerHTML = message
 
   container.appendChild(loader)
 }
