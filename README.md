@@ -2,8 +2,9 @@
 
 An example Node data processor. Tries following methods:
 
-1. Basic for each loop
-2. Threads with for each
+1. JSON parser
+2. Raw buffer
+3. Multiple threads
 
 ## How to run
 

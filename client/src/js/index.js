@@ -25,12 +25,29 @@ const processData = async (elId, data, type) => {
 }
 
 window.addEventListener('load', () => {
-  document.querySelector('#basic-processor-button')
+  document.querySelector('#json-processor-button')
     .addEventListener('click', async () => {
-      const elId = 'basic-container'
+      const elId = 'json-container'
       const data = dataGenerator(getNumRecords())
 
-      const responseData = await processData(elId, { data }, 'basic')
+      const responseData = await processData(elId, { data }, 'json')
+
+      responseProcessor(elId, responseData)
+    })
+
+  document.querySelector('#buffer-processor-button')
+    .addEventListener('click', async () => {
+      const elId = 'buffer-container'
+      const data = dataGenerator(getNumRecords())
+      let stringifiedData = '[\n'
+
+      for (let i = 0; i < data.length; i++) {
+        stringifiedData += `${JSON.stringify(data[i])}\n`
+      }
+
+      stringifiedData += ']'
+
+      const responseData = await processData(elId, stringifiedData, 'buffer')
 
       responseProcessor(elId, responseData)
     })
