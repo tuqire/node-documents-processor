@@ -1,10 +1,8 @@
 const express = require('express')
 const bodyParser = require('body-parser')
-const axios = require('axios')
 const { Worker } = require('worker_threads')
 const server = require('./server')
-
-const EXTERNAL_SERVER_URL = 'http://localhost:8095'
+const dataProcessor = require('./data-processor')
 
 const app = express()
 
@@ -27,16 +25,7 @@ app.post('/data-processor-json', async (req, res) => {
 
   const startTime = Date.now()
 
-  for (let i = 0; i < req.body.data.length; i++) {
-    try {
-      await axios({
-        method: 'post',
-        url: `${EXTERNAL_SERVER_URL}/mock-parser`
-      })
-    } catch (err) {
-      console.log({ err })
-    }
-  }
+  await dataProcessor(req.body.data)
 
   res.status(200).send({
     ...process.memoryUsage(),
@@ -50,34 +39,26 @@ app.post('/data-processor-buffer', async (req, res) => {
   const startTime = Date.now()
   let numProcessed = 0
   let totalNum = 0
-  let data = ''
-  let finishedLoading = false
+  let finished = false
+  let buffer = ''
 
   req.on('data', async chunk => {
-    data += chunk.toString()
+    buffer += chunk.toString()
 
-    const chunkArray = data.split('\n')
+    const data = buffer.split('\n')
 
-    data = chunkArray[chunkArray.length - 1]
-    delete chunkArray[chunkArray.length - 1]
+    buffer = data[data.length - 1]
+    delete data[data.length - 1]
 
-    totalNum += chunkArray.length
+    totalNum += data.length
 
-    for (let i = 0; i < chunkArray.length; i++) {
-      try {
-        await axios({
-          method: 'post',
-          url: `${EXTERNAL_SERVER_URL}/mock-parser`
-        })
-        numProcessed++
-      } catch (err) {
-        console.log({ err })
-      }
-    }
+    const _numProcessed = await dataProcessor(data)
 
-    console.log({ finishedLoading, numProcessed, totalNum })
+    numProcessed += _numProcessed
 
-    if (finishedLoading && numProcessed === totalNum) {
+    console.log({ finished, numProcessed, totalNum })
+
+    if (finished && numProcessed === totalNum) {
       res.status(200).send({
         ...process.memoryUsage(),
         endTime: Date.now(),
@@ -87,7 +68,15 @@ app.post('/data-processor-buffer', async (req, res) => {
   })
 
   req.on('end', async () => {
-    finishedLoading = true
+    finished = true
+
+    if (numProcessed === totalNum) {
+      res.status(200).send({
+        ...process.memoryUsage(),
+        endTime: Date.now(),
+        startTime
+      })
+    }
   })
 })
 
@@ -103,11 +92,12 @@ app.post('/data-processor-threads', async (req, res) => {
   let workersFinished = 0
 
   for (let i = 0; i < numberOfWorkers; i++) {
+    const start = numberRecordsPerWorker * i
+    const end = start + numberRecordsPerWorker + 1
+
     const w = new Worker(`${__dirname}/worker.js`, {
       workerData: {
-        data: req.body.data,
-        start: numberRecordsPerWorker * i,
-        end: (numberRecordsPerWorker * i) + numberRecordsPerWorker
+        data: req.body.data.slice(start, end)
       }
     })
 
