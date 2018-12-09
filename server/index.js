@@ -52,23 +52,25 @@ app.post('/data-processor-threads', async (req, res) => {
   }
 
   const startTime = Date.now()
-  const numberOfWorkers = 4
+  const numberOfWorkers = req.body.numThreads
   const numberRecordsPerWorker = req.body.data.length / numberOfWorkers
   let workersFinished = 0
 
   for (let i = 0; i < numberOfWorkers; i++) {
-    let w = new Worker(`${__dirname}/worker.js`, {
+    const w = new Worker(`${__dirname}/worker.js`, {
       workerData: {
         data: req.body.data,
         start: numberRecordsPerWorker * i,
-        numberRecordsPerWorker
+        end: (numberRecordsPerWorker * i) + numberRecordsPerWorker
       }
     })
 
-    w.on('message', msg => {
-      workersFinished++
+    w.on('message', message => {
+      if (message.done) {
+        workersFinished++
+      }
 
-      console.log({ msg })
+      console.log({ message })
 
       if (workersFinished === numberOfWorkers) {
         res.status(200).send({

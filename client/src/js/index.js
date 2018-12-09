@@ -5,7 +5,7 @@ import { addLoader, removeLoader } from './loader'
 
 const getNumRecords = () => {
   const numRecordsVal = document.querySelector('#number-records').value
-  return !isNaN(numRecordsVal) ? numRecordsVal : 2000
+  return !isNaN(numRecordsVal) ? parseInt(numRecordsVal) : 2000
 }
 
 const processData = async (elId, data, type) => {
@@ -16,7 +16,7 @@ const processData = async (elId, data, type) => {
   const { data: responseData } = await axios({
     method: 'post',
     url: `${SERVER_URL}/data-processor-${type}`,
-    data: { data }
+    data
   })
 
   removeLoader(elId)
@@ -30,7 +30,7 @@ window.addEventListener('load', () => {
       const elId = 'basic-container'
       const data = dataGenerator(getNumRecords())
 
-      const responseData = await processData(elId, data, 'basic')
+      const responseData = await processData(elId, { data }, 'basic')
 
       responseProcessor(elId, responseData)
     })
@@ -40,7 +40,10 @@ window.addEventListener('load', () => {
       const elId = 'threads-container'
       const data = dataGenerator(getNumRecords())
 
-      const responseData = await processData(elId, data, 'threads')
+      const numThreadsVal = document.querySelector('#number-threads').value
+      const numThreads = !isNaN(numThreadsVal) ? parseInt(numThreadsVal) : 4
+
+      const responseData = await processData(elId, { data, numThreads }, 'threads')
 
       responseProcessor(elId, responseData)
     })
