@@ -8,14 +8,14 @@ const getNumRecords = () => {
   return !isNaN(numRecordsVal) ? numRecordsVal : 2000
 }
 
-const processData = async (elId, data) => {
+const processData = async (elId, data, type) => {
   const SERVER_URL = 'http://localhost:8094'
 
   addLoader(elId)
 
   const { data: responseData } = await axios({
     method: 'post',
-    url: `${SERVER_URL}/data-processor-basic`,
+    url: `${SERVER_URL}/data-processor-${type}`,
     data: { data }
   })
 
@@ -30,7 +30,17 @@ window.addEventListener('load', () => {
       const elId = 'basic-container'
       const data = dataGenerator(getNumRecords())
 
-      const responseData = await processData(elId, data)
+      const responseData = await processData(elId, data, 'basic')
+
+      responseProcessor(elId, responseData)
+    })
+
+  document.querySelector('#threads-processor-button')
+    .addEventListener('click', async () => {
+      const elId = 'threads-container'
+      const data = dataGenerator(getNumRecords())
+
+      const responseData = await processData(elId, data, 'threads')
 
       responseProcessor(elId, responseData)
     })

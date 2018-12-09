@@ -2,6 +2,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const server = require('./server')
 const axios = require('axios')
+const { Worker } = require('worker_threads')
 
 const EXTERNAL_SERVER_URL = 'http://localhost:8095'
 
@@ -43,4 +44,39 @@ app.post('/data-processor-basic', async (req, res) => {
     endTime: Date.now(),
     startTime
   })
+})
+
+app.post('/data-processor-threads', async (req, res) => {
+  if (!req.body.data) {
+    res.sendStatus(401)
+  }
+
+  const startTime = Date.now()
+  const numberOfWorkers = 4
+  const numberRecordsPerWorker = req.body.data.length / numberOfWorkers
+  let workersFinished = 0
+
+  for (let i = 0; i < numberOfWorkers; i++) {
+    let w = new Worker(`${__dirname}/worker.js`, {
+      workerData: {
+        data: req.body.data,
+        start: numberRecordsPerWorker * i,
+        numberRecordsPerWorker
+      }
+    })
+
+    w.on('message', msg => {
+      workersFinished++
+
+      console.log({ msg })
+
+      if (workersFinished === numberOfWorkers) {
+        res.status(200).send({
+          ...process.memoryUsage(),
+          endTime: Date.now(),
+          startTime
+        })
+      }
+    })
+  }
 })
