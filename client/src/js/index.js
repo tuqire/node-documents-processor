@@ -3,15 +3,27 @@ import dataGenerator from './data-generator'
 import responseProcessor from './response-processor'
 import { addLoader, removeLoader } from './loader'
 
+const SERVER_URL = 'http://localhost:8094'
+
 const getNumRecords = () => {
   const numRecordsVal = document.querySelector('#number-records').value
   return !isNaN(numRecordsVal) ? parseInt(numRecordsVal) : 2000
 }
 
-const processData = async (elId, data, type) => {
-  const SERVER_URL = 'http://localhost:8094'
+const processData = async (
+  elId,
+  type,
+  dataCallback = d => ({ data: d })
+) => {
+  addLoader(elId, 'Generating data...')
+
+  const _data = dataGenerator(getNumRecords())
+
+  removeLoader(elId)
 
   addLoader(elId)
+
+  const data = dataCallback(_data)
 
   const { data: responseData } = await axios({
     method: 'post',
@@ -29,13 +41,7 @@ window.addEventListener('load', () => {
     .addEventListener('click', async () => {
       const elId = 'json-container'
 
-      addLoader(elId, 'Generating data...')
-
-      const data = dataGenerator(getNumRecords())
-
-      removeLoader(elId)
-
-      const responseData = await processData(elId, { data }, 'json')
+      const responseData = await processData(elId, 'json')
 
       responseProcessor(elId, responseData)
     })
@@ -44,21 +50,15 @@ window.addEventListener('load', () => {
     .addEventListener('click', async () => {
       const elId = 'buffer-container'
 
-      addLoader(elId, 'Generating data...')
+      const responseData = await processData(elId, 'buffer', data => {
+        let stringifiedData = ''
 
-      const data = dataGenerator(getNumRecords())
+        for (let i = 0; i < data.length; i++) {
+          stringifiedData += `\n${JSON.stringify(data[i])}`
+        }
 
-      removeLoader(elId)
-
-      let stringifiedData = '[\n'
-
-      for (let i = 0; i < data.length; i++) {
-        stringifiedData += `${JSON.stringify(data[i])}\n`
-      }
-
-      stringifiedData += ']'
-
-      const responseData = await processData(elId, stringifiedData, 'buffer')
+        return stringifiedData
+      })
 
       responseProcessor(elId, responseData)
     })
@@ -66,17 +66,10 @@ window.addEventListener('load', () => {
   document.querySelector('#threads-processor-button')
     .addEventListener('click', async () => {
       const elId = 'threads-container'
-
-      addLoader(elId, 'Generating data...')
-
-      const data = dataGenerator(getNumRecords())
-
-      removeLoader(elId)
-
       const numThreadsVal = document.querySelector('#number-threads').value
       const numThreads = !isNaN(numThreadsVal) ? parseInt(numThreadsVal) : 4
 
-      const responseData = await processData(elId, { data, numThreads }, 'threads')
+      const responseData = await processData(elId, 'threads', data => ({ data, numThreads }))
 
       responseProcessor(elId, responseData)
     })
