@@ -17,40 +17,40 @@ const processData = async (
 ) => {
   addLoader(elId, 'Generating data...')
 
-  const _data = dataGenerator(getNumRecords())
+  setTimeout(async () => {
+    const _data = dataGenerator(getNumRecords())
 
-  removeLoader(elId)
+    removeLoader(elId)
 
-  addLoader(elId)
+    addLoader(elId)
 
-  const data = dataCallback(_data)
+    const data = dataCallback(_data)
 
-  const { data: responseData } = await axios({
-    method: 'post',
-    url: `${SERVER_URL}/data-processor-${type}`,
-    data
-  })
+    const { data: responseData } = await axios({
+      method: 'post',
+      url: `${SERVER_URL}/data-processor-${type}`,
+      data
+    })
 
-  removeLoader(elId)
+    removeLoader(elId)
 
-  return responseData
+    responseProcessor(elId, responseData)
+  }, 0)
 }
 
 window.addEventListener('load', () => {
   document.querySelector('#json-processor-button')
-    .addEventListener('click', async () => {
+    .addEventListener('click', () => {
       const elId = 'json-container'
 
-      const responseData = await processData(elId, 'json')
-
-      responseProcessor(elId, responseData)
+      processData(elId, 'json')
     })
 
   document.querySelector('#buffer-processor-button')
-    .addEventListener('click', async () => {
+    .addEventListener('click', () => {
       const elId = 'buffer-container'
 
-      const responseData = await processData(elId, 'buffer', data => {
+      processData(elId, 'buffer', data => {
         let stringifiedData = ''
 
         for (let i = 0; i < data.length; i++) {
@@ -59,18 +59,14 @@ window.addEventListener('load', () => {
 
         return stringifiedData
       })
-
-      responseProcessor(elId, responseData)
     })
 
   document.querySelector('#threads-processor-button')
-    .addEventListener('click', async () => {
+    .addEventListener('click', () => {
       const elId = 'threads-container'
       const numThreadsVal = document.querySelector('#number-threads').value
       const numThreads = !isNaN(numThreadsVal) ? parseInt(numThreadsVal) : 4
 
-      const responseData = await processData(elId, 'threads', data => ({ data, numThreads }))
-
-      responseProcessor(elId, responseData)
+      processData(elId, 'threads', data => ({ data, numThreads }))
     })
 })
