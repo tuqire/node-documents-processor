@@ -17,7 +17,7 @@ app.use(function (req, res, next) {
   next()
 })
 
-app.use('/data-processor-json', bodyParser.json({ limit: '50mb' }))
+app.use('/data-processor-json', bodyParser.json({ limit: '500mb' }))
 app.post('/data-processor-json', async (req, res) => {
   const startTime = Date.now()
 
@@ -32,7 +32,7 @@ app.post('/data-processor-json', async (req, res) => {
   })
 })
 
-app.use('/data-processor-buffer', bodyParser.raw({ limit: '50mb' }))
+app.use('/data-processor-buffer', bodyParser.raw({ limit: '500mb' }))
 app.post('/data-processor-buffer', async (req, res) => {
   const startTime = Date.now()
   let numProcessed = 0
@@ -91,7 +91,7 @@ app.post('/data-processor-buffer', async (req, res) => {
   })
 })
 
-app.use('/data-processor-threads', bodyParser.json({ limit: '50mb' }))
+app.use('/data-processor-threads', bodyParser.json({ limit: '500mb' }))
 app.post('/data-processor-threads', async (req, res) => {
   const startTime = Date.now()
   const numberOfWorkers = req.body.numThreads
