@@ -19,18 +19,16 @@ app.use(function (req, res, next) {
 
 app.use('/data-processor-json', bodyParser.json({ limit: '50mb' }))
 app.post('/data-processor-json', async (req, res) => {
-  if (!req.body.data) {
-    res.sendStatus(401)
-  }
-
   const startTime = Date.now()
 
-  await dataProcessor(req.body.data)
+  const { data, numProcessed } = await dataProcessor(req.body.data)
 
   res.status(200).send({
     ...process.memoryUsage(),
     endTime: Date.now(),
-    startTime
+    startTime,
+    data,
+    numProcessed
   })
 })
 
@@ -41,28 +39,39 @@ app.post('/data-processor-buffer', async (req, res) => {
   let totalNum = 0
   let finished = false
   let buffer = ''
+  let data = []
 
   req.on('data', async chunk => {
     buffer += chunk.toString()
 
-    const data = buffer.split('\n')
+    const bufferArray = buffer.split('\n')
 
-    buffer = data[data.length - 1]
-    delete data[data.length - 1]
+    buffer = bufferArray[bufferArray.length - 1]
+    delete bufferArray[bufferArray.length - 1]
 
-    totalNum += data.length
+    totalNum += bufferArray.length
 
-    const _numProcessed = await dataProcessor(data)
+    for (let i = 0; i < bufferArray.length; i++) {
+      if (bufferArray[i]) {
+        bufferArray[i] = JSON.parse(bufferArray[i])
+      }
+    }
+
+    const { data: _data, numProcessed: _numProcessed } = await dataProcessor(bufferArray)
 
     numProcessed += _numProcessed
 
-    console.log({ finished, numProcessed, totalNum })
+    data.push(_data)
+
+    console.log({ finished, _numProcessed, numProcessed, totalNum })
 
     if (finished && numProcessed === totalNum) {
       res.status(200).send({
         ...process.memoryUsage(),
         endTime: Date.now(),
-        startTime
+        startTime,
+        data,
+        numProcessed
       })
     }
   })
@@ -74,7 +83,9 @@ app.post('/data-processor-buffer', async (req, res) => {
       res.status(200).send({
         ...process.memoryUsage(),
         endTime: Date.now(),
-        startTime
+        startTime,
+        data,
+        numProcessed
       })
     }
   })
@@ -82,14 +93,12 @@ app.post('/data-processor-buffer', async (req, res) => {
 
 app.use('/data-processor-threads', bodyParser.json({ limit: '50mb' }))
 app.post('/data-processor-threads', async (req, res) => {
-  if (!req.body.data) {
-    res.sendStatus(401)
-  }
-
   const startTime = Date.now()
   const numberOfWorkers = req.body.numThreads
   const numberRecordsPerWorker = req.body.data.length / numberOfWorkers
   let workersFinished = 0
+  const data = []
+  let numProcessed = 0
 
   for (let i = 0; i < numberOfWorkers; i++) {
     const start = numberRecordsPerWorker * i
@@ -106,13 +115,19 @@ app.post('/data-processor-threads', async (req, res) => {
         workersFinished++
       }
 
-      console.log({ message })
+      numProcessed += message.numProcessed
+
+      data.push(message.data)
+
+      console.log({ done: message.done, numProcessed: message.numProcessed })
 
       if (workersFinished === numberOfWorkers) {
         res.status(200).send({
           ...process.memoryUsage(),
           endTime: Date.now(),
-          startTime
+          startTime,
+          data,
+          numProcessed
         })
       }
     })
