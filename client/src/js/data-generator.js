@@ -7,7 +7,7 @@ export default (numRecords = 2000) => {
   for (let i = 0; i < numRecords; i++) {
     result.push({
       id: uuidv1(),
-      sentence: words({ min: 8, max: 20 }).join(' ')
+      sentence: words({ min: 25, max: 50 }).join(' ')
     })
   }
 
