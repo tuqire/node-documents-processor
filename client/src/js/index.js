@@ -22,7 +22,7 @@ const processData = async (
 
     removeLoader(elId)
 
-    addLoader(elId)
+    addLoader(elId, 'Processing data...')
 
     const data = dataCallback(_data)
 

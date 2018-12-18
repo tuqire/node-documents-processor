@@ -1,4 +1,4 @@
-export const addLoader = (containerId, message = 'Processing...') => {
+export const addLoader = (containerId, message) => {
   const container = document.querySelector(`#${containerId}`)
 
   const loader = document.createElement('h4')
