@@ -51,11 +51,7 @@ window.addEventListener('load', () => {
       const elId = 'buffer-container'
 
       processData(elId, 'buffer', data => {
-        let stringifiedData = ''
-
-        for (let i = 0; i < data.length; i++) {
-          stringifiedData += `\n${JSON.stringify(data[i])}`
-        }
+        let stringifiedData = data.map(JSON.stringify).join('\n')
 
         return stringifiedData
       })

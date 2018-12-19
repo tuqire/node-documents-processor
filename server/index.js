@@ -44,20 +44,23 @@ app.post('/data-processor-buffer', async (req, res) => {
   req.on('data', async chunk => {
     buffer += chunk.toString()
 
-    const bufferArray = buffer.split('\n')
+    const chunkArray = buffer.split('\n')
 
-    buffer = bufferArray[bufferArray.length - 1]
-    delete bufferArray[bufferArray.length - 1]
+    buffer = chunkArray[chunkArray.length - 1]
 
-    totalNum += bufferArray.length
+    chunkArray.pop()
 
-    for (let i = 0; i < bufferArray.length; i++) {
-      if (bufferArray[i]) {
-        bufferArray[i] = JSON.parse(bufferArray[i])
-      }
-    }
+    totalNum += chunkArray.length
 
-    const { data: _data, numProcessed: _numProcessed } = await dataProcessor(bufferArray)
+    // for (let i = 0; i < bufferArray.length; i++) {
+    //   if (!bufferArray[i]) {
+    //     delete bufferArray[i]
+    //   }
+    // }
+
+    const chunkJSON = JSON.parse(`{ "data": [${chunkArray.join(',')}] }`).data
+
+    const { data: _data, numProcessed: _numProcessed } = await dataProcessor(chunkJSON)
 
     numProcessed += _numProcessed
 
@@ -78,6 +81,8 @@ app.post('/data-processor-buffer', async (req, res) => {
 
   req.on('end', async () => {
     finished = true
+
+    console.log({ finished, numProcessed, totalNum })
 
     if (numProcessed === totalNum) {
       res.status(200).send({
