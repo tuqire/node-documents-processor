@@ -27,7 +27,7 @@ app.post('/data-processor-json', async (req, res) => {
     ...process.memoryUsage(),
     endTime: Date.now(),
     startTime,
-    data,
+    data: req.query.shouldReturnData === 'true' ? data : [],
     numProcessed
   })
 })
@@ -52,19 +52,17 @@ app.post('/data-processor-buffer', async (req, res) => {
 
     totalNum += chunkArray.length
 
-    // for (let i = 0; i < bufferArray.length; i++) {
-    //   if (!bufferArray[i]) {
-    //     delete bufferArray[i]
-    //   }
-    // }
-
     const chunkJSON = JSON.parse(`{ "data": [${chunkArray.join(',')}] }`).data
 
     const { data: _data, numProcessed: _numProcessed } = await dataProcessor(chunkJSON)
 
     numProcessed += _numProcessed
 
-    data.push(_data)
+    console.log({ shouldReturnData: req.query.shouldReturnData })
+
+    if (req.query.shouldReturnData === 'true') {
+      data.push(_data)
+    }
 
     console.log({ finished, _numProcessed, numProcessed, totalNum })
 
@@ -122,7 +120,9 @@ app.post('/data-processor-threads', async (req, res) => {
 
       numProcessed += message.numProcessed
 
-      data.push(message.data)
+      if (req.query.shouldReturnData === 'true') {
+        data.push(message.data)
+      }
 
       console.log({ done: message.done, numProcessed: message.numProcessed })
 

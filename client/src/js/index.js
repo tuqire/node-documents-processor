@@ -10,6 +10,11 @@ const getNumRecords = () => {
   return !isNaN(numRecordsVal) ? parseInt(numRecordsVal) : 2000
 }
 
+const shouldReturnData = () => {
+  const shouldReturnDataVal = document.querySelector('#should-return-data').value
+  return shouldReturnDataVal === 'true'
+}
+
 const processData = async (
   elId,
   type,
@@ -28,7 +33,7 @@ const processData = async (
 
     const { data: responseData } = await axios({
       method: 'post',
-      url: `${SERVER_URL}/data-processor-${type}`,
+      url: `${SERVER_URL}/data-processor-${type}?shouldReturnData=${shouldReturnData()}`,
       data
     })
 
